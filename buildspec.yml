@@ -1,0 +1,27 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 22
+    commands:
+      - echo "Installing dependencies..."
+      - npm install
+  build:
+    commands:
+      - echo "Running build script..."
+      - npm run build
+  post_build:
+    commands:
+      - echo "Updating Lambda function code..."
+      - |
+        aws lambda update-function-code \
+        --function-name authorizer \
+        --region eu-west-3 \
+        --zip-file fileb://build.zip
+
+artifacts:
+  type: zip
+  files:
+    - build.zip
+  discard-paths: yes
