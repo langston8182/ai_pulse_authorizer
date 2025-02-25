@@ -15,10 +15,23 @@ phases:
     commands:
       - echo "Updating Lambda function code..."
       - |
+        FUNCTION_NAME="authorizer"
+        REGION="eu-west-3"
+        
+        # Mise à jour du code de la Lambda
         aws lambda update-function-code \
-        --function-name authorizer \
-        --region eu-west-3 \
-        --zip-file fileb://build.zip
+          --function-name $FUNCTION_NAME \
+          --region $REGION \
+          --zip-file fileb://build.zip
+
+        # Attendre la fin de la mise à jour avant de publier une version
+        echo "Waiting for Lambda update to complete..."
+        aws lambda wait function-updated --function-name $FUNCTION_NAME --region $REGION
+
+        # Publier une nouvelle version après la mise à jour
+        echo "Publishing new Lambda version..."
+        VERSION=$(aws lambda publish-version --function-name $FUNCTION_NAME --region $REGION --query 'Version' --output text)
+        echo "New version published: $VERSION"
 
 artifacts:
   type: zip
